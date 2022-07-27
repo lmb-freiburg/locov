@@ -1,0 +1,126 @@
+MODEL:
+  # This is what indicates we want image-caption training not object detection
+  META_ARCHITECTURE: "DistillProposalMMSSRCNN"
+  # URL to the initial weights, trained for imagenet classification
+  WEIGHTS: "catalog://ImageNetPretrained/MSRA/R-50"
+  BACKBONE:
+    # it should start from pretrained weights on mmss
+    FREEZE_AT: 0
+  # a full resnet, including stem and 4 blocks
+  RESNETS:
+    DEPTH: 50
+    OUT_FEATURES: ["res4"]
+  RPN:
+    PRE_NMS_TOPK_TEST: 6000
+    POST_NMS_TOPK_TEST: 1000
+  # Trim the prefix of the checkpoint parameter names so they can be correctly loaded
+  BACKBONE_PREFIX: ("backbone.body.",)
+  # Whether to load the vl_projection layer from the multimedia self-supervised learning head
+  # If true, it loads it from the default mmss head defined by MODEL.MMSS_HEAD.DEFAULT_HEAD
+  LOAD_EMB_PRED_FROM_MMSS_HEAD: True
+  LOAD_OBJ_PROPOSALS: True
+  ROI_HEADS:
+    NAME: "EmbeddingProposalsRes5ROIHeads"
+    # Number of foreground classes
+    NUM_CLASSES: 80
+    # Target fraction of RoI minibatch that is labeled foreground (i.e. class > 0)
+    # At most how much of a batch should be filled with positive boxes. In zero-shot setting
+    # having too many background hurts. Note 1.0 doesn't mean there won't be any background.
+    # It is unlikely to have 512 positive boxes, and the rest is always filled with background.
+    POSITIVE_FRACTION: 1.0
+    DETACH_CLASS_PREDICTOR: True
+    BATCH_SIZE_PER_IMAGE: 200
+  ROI_BOX_HEAD:
+    NAME: "EmbeddingFastRCNNOutputLayers"
+    # Whether to use class agnostic for bbox regression
+    CLS_AGNOSTIC_BBOX_REG: True
+    # Dimension of embeddings that will be loaded (300 for Glove, 768 for Bert)
+    EMB_DIM: 768
+    # Always true for zero-shot
+    EMBEDDING_BASED: True
+    # Whether or not to freeze the vl_projection layer. True is better. Only works if
+    # MODEL.LOAD_EMB_PRED_FROM_MMSS_HEAD is true
+    FREEZE_EMB_PRED: False
+  LANGUAGE_BACKBONE:
+    # make a BERT model to process captions
+    TYPE: "build_bertemb_backbone"
+    # and freeze it (loaded from original pretrained bert of huggingface)
+    FREEZE: True
+  MMSS_HEAD:
+    # We want both a grounding head and a transformer head on top of image and caption,
+    # each of which defines its own objective functions.
+    TYPES: ("GroundingHead", "TransformerHead")
+    DEFAULT_HEAD: "GroundingHead"
+    # Share the weights of the vision to language projection between the two heads. 
+    # Use the one on the grounding head because that is the default (see above)
+    TIE_VL_PROJECTION_WEIGHTS: True
+    # Randomly keep up to 100 visual regions from each image. This is to save memory.
+    SPATIAL_DROPOUT: 100
+    # Activates istillation loss between the two branches
+    DISTILLATION_LOSS: True
+    DISTILLATION_TEMPERATURE: 10.0
+    DISTILLATION_LOSS_WEIGHT: 1.0
+    DISTILLATION_TEACHER_TRANSFORMER: False
+    GROUNDING:
+      # Use dot product for grounding. This could be cosine or euclidean too.
+      LOCAL_METRIC: "dot"
+      # After aligning words to regions, sum the local distances to compute global distance.
+      GLOBAL_METRIC: "aligned_local"
+      # Use softmax to softly align each word to regions, and vice versa. 
+      # This could be for instance hardmax, which aligns to the most similar
+      ALIGNMENT: "softmax"
+      # Typical good values are 100.0 for euclidean, 10.0 for dot, 0.01 for cosine
+      ALIGNMENT_TEMPERATURE: 10.0
+      # This loss is to choose the right caption out of all captions in the batch, 
+      # And similarly choose the right image. Could be triplet loss instead.
+      LOSS: "cross_entropy"
+      # Whether to find a region for each word
+      ALIGN_WORDS_TO_REGIONS: True
+      # Whether to find a word for a region
+      # At least one of these two should be True
+      ALIGN_REGIONS_TO_WORDS: True
+    TRANSFORMER:
+      # Whether to perform masked language modeling (randomly mask words from captions
+      # and have the model reconstruct them)
+      MASKED_LANGUAGE_MODELING: True
+      # Whether to do that during validation as well. That is not good if you want to
+      # measure image-caption matching scores.
+      MASKED_LANGUAGE_MODELING_VALIDATION: False
+      # For now this is not implemented, so keep it False and ''
+      MASKED_VISUAL_MODELING: False
+      MVM_LOSS: ''
+      # For Multimedia Matching loss, cross-entropy works just like in the grounding head
+      MMM_LOSS: 'cross_entropy'
+      # Typical BERT configs as in Huggingface
+      BERT_CONFIG:
+        num_hidden_layers: 6
+        num_attention_heads: 8
+        intermediate_size: 768
+DATASETS:
+  TRAIN: ("coco_captions_train_seen_proposals",)
+  TEST: ("coco_captions_val",)
+  NUM_TRAINIG_SAMPLES: 117266
+  DATASET_CLASS: "COCOCaptionsDataset"
+SOLVER:
+  BASE_LR: 0.001
+  WEIGHT_DECAY: 0.0001
+  STEPS: (45000, 60000, 80000) #(20000, 35000)
+  MAX_ITER: 90000 #40000
+  IMS_PER_BATCH: 32
+  CHECKPOINT_PERIOD: 1000
+  LOG_PERIOD: 100
+  CLIP_GRADIENTS:
+    CLIP_VALUE: 5.0
+  # A value of more than one means accumulate gradients for several batches before updating
+  # GRADIENT_ACCUMULATION_STEPS: 1
+  # If true, it calls model.train() before computing validation loss. Needed for some models.
+  # USE_TRAIN_MODE_FOR_VALIDATION_LOSS: False
+TEST:
+  EVAL_PERIOD: 5000
+  DO_EVAL: True
+  IMS_PER_BATCH: 1 #16
+INPUT:
+  MAX_SIZE_TEST: 400
+OUTPUT_DIR: "/work/dlclarge1/bravoma-wsog/locov/lsm"
+VERSION: 2
+SEED: 1992
