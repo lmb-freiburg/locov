@@ -30,8 +30,8 @@
 Originally the code was tested on `python=3.8.13`, `torch=1.10.0`, `cuda=11.2` and OS `Ubuntu 20.04`.
 
 ~~~bash
-git clone 
-cd 
+git clone https://github.com/lmb-freiburg/locov.git
+cd locov
 pip install -r requirements.txt
 ~~~
 
