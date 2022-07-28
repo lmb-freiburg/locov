@@ -32,19 +32,13 @@ Originally the code was tested on `python=3.8.13`, `torch=1.10.0`, `cuda=11.2` a
 ~~~bash
 git clone https://github.com/lmb-freiburg/locov.git
 cd locov
-<<<<<<< HEAD
-=======
-pip install -r requirements.txt
->>>>>>> 8260cdbe87643630c43c696b59a7ff06565e4988
 ~~~
 
 ## Prepare datasets
 ### Download datasets
 <<<<<<< HEAD
+<<<<<<< HEAD
 - Download MS COCO training and validation datasets. Download detection and caption annotations for  retrieval from the original [page](https://cocodataset.org/).
-=======
-- Download MS COCO training and validation datasets. Download detection and caption annotations for  retrieval from the original [page]().
->>>>>>> 8260cdbe87643630c43c696b59a7ff06565e4988
 - Save the data in datasets_data
 - Run the script to create the annotation subsets that include only base and novel categories
 ~~~bash
