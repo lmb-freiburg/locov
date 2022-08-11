@@ -56,8 +56,7 @@ python tools/coco_bert_embeddings.py
 
 ## Train and validate Open Vocabulary Detection
 ### Model Outline
-<p align="center"><img src="assets/model.pdf" alt="Method" title="LocOV" /></p>
-<img src="assets/model.pdf" width="1000"> <br/>
+<p align="center"><img src="assets/locov.png" alt="Method" title="LocOV" /></p>
 
 ### Useful script commands
 #### Train LSM stage
