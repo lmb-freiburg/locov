@@ -36,8 +36,6 @@ cd locov
 
 ## Prepare datasets
 ### Download datasets
-<<<<<<< HEAD
-<<<<<<< HEAD
 - Download MS COCO training and validation datasets. Download detection and caption annotations for  retrieval from the original [page](https://cocodataset.org/).
 - Save the data in datasets_data
 - Run the script to create the annotation subsets that include only base and novel categories
@@ -50,10 +48,16 @@ python tools/convert_annotations_to_ov_sets.py
 ~~~bash
 python tools/coco_bert_embeddings.py
 ~~~
+- Or download the precomputed ones [Embeddings](https://lmb.informatik.uni-freiburg.de/resources/binaries/gcpr2022_locov/coco_nouns_bertemb.json)
+
+### Precomputed generic object proposals
+- Train [OLN](https://github.com/mcahny/object_localization_network) on MSCOCO known classes and extract the proposals for all the training set. 
+- Or download the precomputed proposals for MSCOCO Train on known classes only [Proposals](https://lmb.informatik.uni-freiburg.de/resources/binaries/gcpr2022_locov/coco_train2017_seen.pkl) (3.9GB)
 
 ## Train and validate Open Vocabulary Detection
 ### Model Outline
 <p align="center"><img src="assets/model.pdf" alt="Method" title="LocOV" /></p>
+<img src="assets/model.pdf" width="1000"> <br/>
 
 ### Useful script commands
 #### Train LSM stage
@@ -78,12 +82,14 @@ OUTPUT_DIR output/eval_locov
 #### Models zoo
 Pretrained models can be found in the models directory
 
-|  Model  |  AP-novel  |  AP50-novel  |  AP-known  |  AP50-known  |  AP-general  |  AP50-general  |
-| ------- | ---------- | ------------ | ---------- | ------------ | ------------ | -------------- |
-| LocOv   | 17.219     | 30.109       | 33.499     | 53.383       | 28.129       | 45.719         |
+|  Model  |  AP-novel  |  AP50-novel  |  AP-known  |  AP50-known  |  AP-general  |  AP50-general  | Weights |
+| ------- | ---------- | ------------ | ---------- | ------------ | ------------ | -------------- | ------- |
+| LocOv   | 17.219     | 30.109       | 33.499     | 53.383       | 28.129       | 45.719         | [LocOv](https://lmb.informatik.uni-freiburg.de/resources/binaries/gcpr2022_locov/LocOV.pth) |
 
 ## Acknowledgements
 This work was supported by Deutscher Akademischer Austauschdienst - German Academic Exchange Service (DAAD) Research Grants - Doctoral Programmes in Germany, 2019/20; grant number: 57440921.
+
+The Deep Learning Cluster used in this work is partially funded by the German Research Foundation (DFG) - 417962828.
 
 We especially thank the creators of the following github repositories for providing helpful code:
 - Zareian et al. for their open-vocabulary setup and code: [OVR-CNN](https://github.com/alirezazareian/ovr-cnn)
